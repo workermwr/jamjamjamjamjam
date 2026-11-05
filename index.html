@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jam Presisi Ekstrem & Generator Seni Mikrodetik</title>
+    <title>Jam Presisi Ekstrem - Ruang Angka Kuantum</title>
     <style>
         * {
             box-sizing: border-box;
@@ -17,99 +17,99 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #04060a;
-            color: #f3f4f6;
+            background-color: #000000; /* Hitam Pekat */
+            color: #ffffff; /* Angka Jam Putih Bersih */
             user-select: none;
             overflow: hidden;
             position: relative;
         }
-        /* Kanvas seni latar belakang yang digenerate per milidetik */
-        #artCanvas {
+        /* Kanvas Angka Acak Biru Gelap Melayang Bebas */
+        #quantumCanvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 1;
-            opacity: 0.15; /* Menjaga agar jam tetap kontras dan mudah dibaca */
             pointer-events: none;
         }
+        /* Jam Telanjang Tanpa Menu, Tanpa Kotak, Mengapung di Atas Canvas */
         .clock-container {
             text-align: center;
-            padding: 40px;
-            width: 90%;
-            max-width: 1000px;
+            padding: 20px;
+            width: 100%;
+            max-width: 1200px;
             z-index: 2;
-            background: rgba(4, 6, 10, 0.75);
-            border-radius: 24px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            pointer-events: none; /* Klik tembus ke background jika nanti butuh interaksi */
         }
         .time-display {
-            font-weight: 800;
+            font-weight: 900;
             font-variant-numeric: tabular-nums;
-            letter-spacing: -0.02em;
-            line-height: 1;
+            letter-spacing: -0.04em;
+            line-height: 0.9;
             display: flex;
             justify-content: center;
             align-items: baseline;
             flex-wrap: wrap;
+            /* Efek pendaran cahaya tipis agar jam kontras di atas angka melayang */
+            text-shadow: 0 0 40px rgba(0, 0, 0, 0.9); 
         }
         .time-main {
-            font-size: 12vw;
+            font-size: 15vw;
         }
         .time-sub {
-            font-size: 3.5vw;
-            opacity: 0.4;
+            font-size: 3.8vw;
+            opacity: 0.5;
             font-family: monospace;
-            margin-left: 10px;
-            color: #34d399;
+            margin-left: 15px;
+            color: #00ff66; /* Warna mikrodetik hijau neon penanda presisi atom */
+            text-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
         }
         .date {
-            font-size: 1.4rem;
-            margin-top: 25px;
-            opacity: 0.6;
+            font-size: 1.5rem;
+            margin-top: 30px;
+            opacity: 0.5;
             font-weight: 500;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
         }
         .status-container {
-            margin-top: 40px;
+            margin-top: 45px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         .badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 18px;
-            font-size: 0.8rem;
+            padding: 5px 14px;
+            font-size: 0.75rem;
             font-weight: 700;
             border-radius: 9999px;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.1em;
+            opacity: 0.7;
         }
         .badge-syncing {
             background: rgba(245, 158, 11, 0.1);
             color: #f59e0b;
         }
         .badge-accurate {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
+            background: rgba(0, 229, 255, 0.1);
+            color: #00e5ff; /* Indikator sinkronisasi biru langit */
         }
         .pulse {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             background-color: currentColor;
             border-radius: 50%;
             animation: blink 1s infinite;
         }
         .latency-info {
-            font-size: 0.75rem;
-            opacity: 0.4;
+            font-size: 0.7rem;
+            opacity: 0.3;
             font-family: monospace;
             letter-spacing: 0.02em;
         }
@@ -121,26 +121,26 @@
 </head>
 <body>
 
-    <!-- Elemen Canvas untuk generate gambar realtime -->
-    <canvas id="artCanvas"></canvas>
+    <!-- Kanvas partikel angka melayang bebas -->
+    <canvas id="quantumCanvas"></canvas>
 
     <div class="clock-container">
-        <!-- Tampilan Utama Jam -->
+        <!-- Tampilan Utama Jam Telanjang -->
         <div class="time-display">
             <span class="time-main" id="clock">00:00:00</span>
             <span class="time-sub" id="microseconds">.000000</span>
         </div>
         
         <!-- Tampilan Tanggal -->
-        <div class="date" id="date">MEMPROSES SIMULASI WAKTU...</div>
+        <div class="date" id="date">CALIBRATING TIME...</div>
         
-        <!-- Bukti Validitas Jaringan -->
+        <!-- Teks Validitas Jaringan -->
         <div class="status-container">
             <div id="statusBadge" class="badge badge-syncing">
                 <span class="pulse"></span>
-                <span id="statusText">MENGHUBUNGKAN KE SERVER ATOM CLOUDFLARE...</span>
+                <span id="statusText">CONNECTING TO CLOUDFLARE ATOMIC EDGE...</span>
             </div>
-            <div id="latencyText" class="latency-info">Sinkronisasi presisi tinggi sedang disiapkan...</div>
+            <div id="latencyText" class="latency-info">Calculating local device drift...</div>
         </div>
     </div>
     <script>
@@ -148,9 +148,12 @@
         let initialLocalTime = Date.now();
         let initialPerfTime = performance.now();
 
-        // Konfigurasi Kanvas Seni Latar Belakang
-        const canvas = document.getElementById('artCanvas');
+        // Setup Kanvas Quantum Particle
+        const canvas = document.getElementById('quantumCanvas');
         const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = 120; // Jumlah angka acak biru gelap yang melayang bebas
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -159,7 +162,56 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // 1. Sinkronisasi Otomatis dengan Server Atom Cloudflare
+        // Menginisialisasi objek angka melayang dengan parameter bebas acak
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    // Kecepatan gerak bebas acak (bisa ke atas, bawah, kanan, kiri)
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5,
+                    // Karakter angka awal acak 0-9
+                    char: Math.floor(Math.random() * 10).toString(),
+                    // Ukuran font bervariasi untuk menciptakan efek kedalaman ruang (3D depth)
+                    fontSize: Math.floor(Math.random() * 24) + 12,
+                    // Transparansi biru gelap agar tetap berada samar di latar belakang
+                    alpha: Math.random() * 0.25 + 0.05
+                });
+            }
+        }
+
+        // Menggambar dan memperbarui posisi angka bebas di layar tiap frame
+        function drawQuantumBackground() {
+            // Memberikan efek jejak samar (fade trail) tipis di setiap pergerakan angka
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+
+                // Acak ulang karakter angka secara real-time di memori setiap milidetik berjalan
+                if (Math.random() < 0.03) {
+                    p.char = Math.floor(Math.random() * 10).toString();
+                }
+
+                // Gambar angka ke kanvas dengan warna Biru Gelap
+                ctx.fillStyle = `rgba(16, 52, 166, ${p.alpha})`; // Warna Biru Gelap Safir/Indanthrone
+                ctx.font = `bold ${p.fontSize}px monospace`;
+                ctx.fillText(p.char, p.x, p.y);
+
+                // Perbarui posisi koordinat berdasarkan vektor kecepatan acaknya
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Efek memantul jika angka melayang menabrak batas ujung layar browser
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            }
+        }
+
+        // 1. Sinkronisasi Jam Akurat Murni dengan Server Atom Cloudflare
         async function syncWithAtomicServer() {
             const startText = document.getElementById('statusText');
             const latencyText = document.getElementById('latencyText');
@@ -167,7 +219,6 @@
             
             try {
                 const t0 = performance.now();
-                // Mengakses DNS over HTTPS Cloudflare yang dijamin aman dari pemblokiran CORS browser
                 const response = await fetch('https://cloudflare-dns.com', {
                     headers: { 'Accept': 'application/dns-json' }
                 });
@@ -181,7 +232,6 @@
                 const serverTs = new Date(serverDateHeader).getTime();
                 const rtt = t1 - t0; 
                 
-                // Formula Kompensasi Latensi Jaringan Trans-Internet (RTT / 2)
                 const correctedServerTime = serverTs + (rtt / 2);
                 
                 initialLocalTime = correctedServerTime;
@@ -202,55 +252,21 @@
                     
                     badge.className = "badge badge-accurate";
                     startText.textContent = "INTERNAL METADATA SYNCED";
-                    latencyText.textContent = `Deviasi Terkoreksi Otomatis: ${timeOffset > 0 ? '+' : ''}${Math.round(timeOffset)}ms`;
+                    latencyText.textContent = `Deviasi Terkoreksi: ${timeOffset > 0 ? '+' : ''}${Math.round(timeOffset)}ms`;
                 } else {
                     startText.textContent = "LOCAL HIGH-RES TIME ONLY";
                 }
             }
         }
 
-        // 2. Generator Gambar Seni Abstrak berbasis Algoritma Chaos Milidetik
-        function generateMilisecondArt(currentTotalMs) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Menggunakan milidetik berjalan sebagai basis formula matematika chaos
-            const seed = currentTotalMs % 100000;
-            
-            const cols = 4;
-            const rows = 4;
-            const cellWidth = canvas.width / cols;
-            const cellHeight = canvas.height / rows;
-
-            for (let i = 0; i < cols; i++) {
-                for (let j = 0; j < rows; j++) {
-                    // Kalkulasi nilai warna RGB murni dari sisa pecahan milidetik saat ini
-                    const r = Math.floor((Math.sin(seed + (i * 10)) + 1) * 127.5);
-                    const g = Math.floor((Math.cos(seed + (j * 20)) + 1) * 127.5);
-                    const b = Math.floor((Math.sin(seed + (i + j)) + 1) * 127.5);
-                    
-                    // Render kotak warna acak ke GPU secara instan
-                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.25)`;
-                    ctx.fillRect(i * cellWidth, j * cellHeight, cellWidth, cellHeight);
-                    
-                    // Render garis simetris dinamis pelengkap efek futuristik
-                    ctx.strokeStyle = `rgba(${g}, ${b}, ${r}, 0.1)`;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(i * cellWidth + (seed % cellWidth), j * cellHeight);
-                    ctx.lineTo((i + 1) * cellWidth, (j + 1) * cellHeight - (seed % cellHeight));
-                    ctx.stroke();
-                }
-            }
-        }
-
-        // 3. Main Engine Loop Jam (60FPS - 144FPS+ Mengikuti Monitor)
+        // 2. Engine Loop Utama (Sinkronisasi dengan refresh rate GPU/Monitor)
         function runHighResClock() {
             const elapsed = performance.now() - initialPerfTime;
             const currentTotalMs = initialLocalTime + elapsed;
             
             const accurateNow = new Date(currentTotalMs);
             
-            // Format Waktu Utama
+            // Format Jam Utama Telanjang
             const hours = String(accurateNow.getHours()).padStart(2, '0');
             const minutes = String(accurateNow.getMinutes()).padStart(2, '0');
             const seconds = String(accurateNow.getSeconds()).padStart(2, '0');
@@ -267,18 +283,19 @@
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('date').textContent = accurateNow.toLocaleDateString('id-ID', options);
             
-            // Regenerasi Gambar Latar Belakang per Milidetik
-            generateMilisecondArt(currentTotalMs);
+            // Render Animasi Latar Belakang Angka Biru Gelap Melayang Bebas
+            drawQuantumBackground();
             
-            // Menjaga perputaran tetap sinkron dengan refresh rate kartu grafis browser
+            // Loop kontinu presisi tinggi
             requestAnimationFrame(runHighResClock);
         }
 
         // Eksekusi Sistem Utama
+        initParticles();
         runHighResClock();
         syncWithAtomicServer();
 
-        // Lakukan sinkronisasi ulang berkala setiap 5 menit agar jam tidak mengalami drift
+        // Ambil ulang sampel server atom setiap 5 menit agar jam tidak melesat
         setInterval(syncWithAtomicServer, 300000);
     </script>
 </body>
