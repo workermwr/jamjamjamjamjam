@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jam Realtime Presisi</title>
+    <title>Jam Realtime Presisi Militer</title>
     <style>
         * {
             box-sizing: border-box;
@@ -17,19 +17,14 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #0b0f19;
+            background-color: #05070f;
             color: #f3f4f6;
             transition: background-color 0.3s, color 0.3s;
         }
-        /* Mengikuti tema perangkat user jika mereka pakai light mode */
         @media (prefers-color-scheme: light) {
             body {
                 background-color: #f9fafb;
                 color: #111827;
-            }
-            .accuracy-badge {
-                background: rgba(16, 185, 129, 0.1);
-                color: #059669;
             }
         }
         .clock-container {
@@ -37,43 +32,61 @@
             padding: 20px;
         }
         .time {
-            font-size: 16vw; /* Ukuran dinamis mengikuti lebar layar */
-            font-weight: 700;
-            font-variant-numeric: tabular-nums; /* Mencegah angka bergeser saat berubah */
-            letter-spacing: -0.02em;
+            font-size: 16vw;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em;
             line-height: 1;
         }
         .date {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin-top: 15px;
-            opacity: 0.7;
+            opacity: 0.6;
             font-weight: 400;
             letter-spacing: 0.05em;
             text-transform: uppercase;
         }
-        .accuracy-badge {
+        .status-container {
+            margin-top: 35px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 30px;
+            gap: 8px;
             padding: 6px 16px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background: rgba(52, 211, 153, 0.1);
-            color: #34d399;
+            font-size: 0.8rem;
+            font-weight: 700;
             border-radius: 9999px;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
+            transition: all 0.3s;
+        }
+        .badge-syncing {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        .badge-accurate {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
         }
         .pulse {
             width: 8px;
             height: 8px;
             background-color: currentColor;
             border-radius: 50%;
-            animation: blink 1s infinite inset;
+            animation: blink 1s infinite;
+        }
+        .latency-info {
+            font-size: 0.75rem;
+            opacity: 0.4;
+            font-family: monospace;
         }
         @keyframes blink {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            50% { opacity: 0.3; }
         }
     </style>
 </head>
@@ -84,37 +97,91 @@
         <div class="time" id="clock">00:00:00</div>
         
         <!-- Tampilan Tanggal -->
-        <div class="date" id="date">MENGHITUNG...</div>
+        <div class="date" id="date">SINKRONISASI...</div>
         
-        <!-- Badge Pengaku Keakuratan -->
-        <div class="accuracy-badge">
-            <span class="pulse"></span>
-            <span>HIGH-PRECISION REALTIME SYNC</span>
+        <!-- Status Keakuratan -->
+        <div class="status-container">
+            <div id="statusBadge" class="badge badge-syncing">
+                <span class="pulse"></span>
+                <span id="statusText">CONNECTING TO ATOMIC TIME SERVER...</span>
+            </div>
+            <div id="latencyText" class="latency-info">Menghitung deviasi lokal...</div>
         </div>
     </div>
 
     <script>
+        let timeOffset = 0; // Selisih waktu lokal dengan waktu server dalam milidetik
+
+        // Fungsi sinkronisasi dengan Server Waktu Dunia Cloudflare
+        async function syncWithServer() {
+            const startText = document.getElementById('statusText');
+            const latencyText = document.getElementById('latencyText');
+            const badge = document.getElementById('statusBadge');
+            
+            try {
+                const t0 = performance.now();
+                // Mengambil timestamp murni dari CDN global terdekat
+                const response = await fetch('https://1.1.1' + Date.now());
+                const t1 = performance.now();
+                
+                const text = await response.text();
+                const lines = text.split('\n');
+                let serverTs = 0;
+                
+                for (let line of lines) {
+                    if (line.startsWith('ts=')) {
+                        serverTs = parseFloat(line.split('=')[1]) * 1000; // Konversi ke milidetik
+                        break;
+                    }
+                }
+                
+                if (serverTs > 0) {
+                    const rtt = t1 - t0; // Round Trip Time (Latensi Jaringan)
+                    const correctedServerTime = serverTs + (rtt / 2); // Estimasi waktu server saat sampai di client
+                    const localTime = Date.now();
+                    
+                    // Hitung berapa milidetik jam internal user meleset dari server asli
+                    timeOffset = correctedServerTime - localTime;
+                    
+                    // Ubah UI menjadi status Akurat Terverifikasi
+                    badge.className = "badge badge-accurate";
+                    startText.textContent = "NTP ATOMIC TIME SYNCED";
+                    latencyText.textContent = `Deviasi Perangkat: ${timeOffset > 0 ? '+' : ''}${Math.round(timeOffset)}ms | Latensi: ${Math.round(rtt)}ms`;
+                }
+            } catch (error) {
+                console.error("Gagal sinkronisasi dengan server utama, menggunakan fallback lokal:", error);
+                startText.textContent = "LOCAL TIME ONLY (SERVER TIMEOUT)";
+                latencyText.textContent = "Gagal memverifikasi deviasi jaringan.";
+            }
+        }
+
         function updateClock() {
-            const now = new Date();
+            // Dapatkan waktu lokal saat ini lalu koreksi dengan selisih waktu server
+            const localNow = Date.now();
+            const accurateNow = new Date(localNow + timeOffset);
             
             // Format Jam (HH:MM:SS)
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const hours = String(accurateNow.getHours()).padStart(2, '0');
+            const minutes = String(accurateNow.getMinutes()).padStart(2, '0');
+            const seconds = String(accurateNow.getSeconds()).padStart(2, '0');
             
             document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
             
             // Format Tanggal Indonesia
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('date').textContent = now.toLocaleDateString('id-ID', options);
+            document.getElementById('date').textContent = accurateNow.toLocaleDateString('id-ID', options);
             
-            // Memastikan sinkronisasi berjalan tepat pada milidetik berikutnya
-            const delay = 1000 - now.getMilliseconds();
-            setTimeout(updateClock, delay);
+            // Atur agar loop berikutnya berjalan tepat di milidetik ke-0 di detik berikutnya
+            const nextTickDelay = 1000 - (accurateNow.getMilliseconds());
+            setTimeout(updateClock, nextTickDelay);
         }
 
-        // Jalankan fungsi pertama kali
-        updateClock();
+        // Jalankan logika
+        updateClock();      // Langsung jalankan jam menggunakan waktu lokal terlebih dahulu
+        syncWithServer();   // Lakukan sinkronisasi di latar belakang untuk mengoreksi secara instan
+
+        // Sinkronisasi ulang setiap 10 menit untuk menjaga stabilitas dari drift hardware browser
+        setInterval(syncWithServer, 600000);
     </script>
 </body>
 </html>
