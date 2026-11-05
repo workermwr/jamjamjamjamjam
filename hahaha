@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jam Realtime Presisi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Mengikuti tema perangkat user jika mereka pakai light mode */
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: #f9fafb;
+                color: #111827;
+            }
+            .accuracy-badge {
+                background: rgba(16, 185, 129, 0.1);
+                color: #059669;
+            }
+        }
+        .clock-container {
+            text-align: center;
+            padding: 20px;
+        }
+        .time {
+            font-size: 16vw; /* Ukuran dinamis mengikuti lebar layar */
+            font-weight: 700;
+            font-variant-numeric: tabular-nums; /* Mencegah angka bergeser saat berubah */
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .date {
+            font-size: 1.5rem;
+            margin-top: 15px;
+            opacity: 0.7;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .accuracy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 30px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+        }
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background-color: currentColor;
+            border-radius: 50%;
+            animation: blink 1s infinite inset;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="clock-container">
+        <!-- Tampilan Utama Jam -->
+        <div class="time" id="clock">00:00:00</div>
+        
+        <!-- Tampilan Tanggal -->
+        <div class="date" id="date">MENGHITUNG...</div>
+        
+        <!-- Badge Pengaku Keakuratan -->
+        <div class="accuracy-badge">
+            <span class="pulse"></span>
+            <span>HIGH-PRECISION REALTIME SYNC</span>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            
+            // Format Jam (HH:MM:SS)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // Format Tanggal Indonesia
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date').textContent = now.toLocaleDateString('id-ID', options);
+            
+            // Memastikan sinkronisasi berjalan tepat pada milidetik berikutnya
+            const delay = 1000 - now.getMilliseconds();
+            setTimeout(updateClock, delay);
+        }
+
+        // Jalankan fungsi pertama kali
+        updateClock();
+    </script>
+</body>
+</html>
